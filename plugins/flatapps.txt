@@ -1,0 +1,10 @@
+com.brave.Browser
+it.mijorus.gearlever
+com.moonlight_stream.Moonlight
+com.valvesoftware.SteamLink
+org.qbittorrent.qBittorrent
+io.missioncenter.MissionCenter
+com.parsecgaming.parsec
+org.videolan.VLC
+org.ryujinx.Ryujinx
+com.mattjakeman.ExtensionManager

@@ -1,0 +1,9 @@
+dnf 100
+update 200
+fusion 300
+video 400
+codec 500
+nfs 600 
+flatpak 700
+virt 800
+app_install 900
