@@ -1,0 +1,12 @@
+[Unit]
+Description=GVT-g service
+Wants=multi-user.target
+
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /usr/bin/gvt_pe.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
