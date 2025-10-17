@@ -7,3 +7,4 @@ nfs 600
 flatpak 700
 virt 800
 app_install 900
+shell 1000
