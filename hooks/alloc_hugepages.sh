@@ -3,10 +3,12 @@
 ## Load the config file
 source "/etc/libvirt/hooks/kvm.conf"
 
-## Calculate number of hugepages to allocate from memory (in MB)
-HUGEPAGES="$(($MEMORY/$(($(grep Hugepagesize /proc/meminfo | awk '{print $2}')/1024))))"
+echo "Allocating hugepages for VM: $VM_NAME"
 
-echo "Allocating hugepages..."
+## USE THE PRE-CALCULATED VALUE DIRECTLY - NO RECALCULATION NEEDED
+HUGEPAGES=$MEMORY
+
+echo "Allocating $HUGEPAGES hugepages..."
 echo $HUGEPAGES > /proc/sys/vm/nr_hugepages
 ALLOC_PAGES=$(cat /proc/sys/vm/nr_hugepages)
 
@@ -16,7 +18,7 @@ do
     echo 1 > /proc/sys/vm/compact_memory            ## defrag ram
     echo $HUGEPAGES > /proc/sys/vm/nr_hugepages
     ALLOC_PAGES=$(cat /proc/sys/vm/nr_hugepages)
-    echo "Succesfully allocated $ALLOC_PAGES / $HUGEPAGES"
+    echo "Successfully allocated $ALLOC_PAGES / $HUGEPAGES"
     let TRIES+=1
 done
 
@@ -26,3 +28,6 @@ then
     echo 0 > /proc/sys/vm/nr_hugepages
     exit 1
 fi
+
+echo "HugePages allocation completed successfully!"
+grep -i huge /proc/meminfo
