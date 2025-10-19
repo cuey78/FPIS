@@ -1,4 +1,0 @@
-#!/bin/bash
-OBJECT="$1"
-OPERATION="$2"
-
