@@ -47,6 +47,7 @@ install_virtualization() {
                 4 "Enable Intel GVT Service" \
                 5 "Run Virt-Manager as Non-Root" \
                 6 "Evdev Helper (keyboard/mouse passthrough)" \
+                7 "Auto Memory Hugepages for VM" \
                 B "Back" \
                 3>&1 1>&2 2>&3)
 
@@ -58,6 +59,7 @@ install_virtualization() {
             4) enable_intel_gvt_service ;;
             5) virtman_noroot ;;
             6) evdev ;;
+            7) auto_huge ;;
             B) break ;;
             *) echo "Invalid option. Please try again." ;;
         esac
