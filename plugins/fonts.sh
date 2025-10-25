@@ -21,7 +21,7 @@ font_installation_menu() {
                 1 "Install JetBrains Mono Nerd Font" \
                 2 "Install Microsoft Core Fonts" \
                 3 "Install Both Fonts" \
-                4 "Return to Main Menu" \
+                b "Back" \
                 2>&1 >/dev/tty)
         
         case $choice in
@@ -50,7 +50,7 @@ font_installation_menu() {
                     show_result "Both font installations completed!"
                 fi
                 ;;
-            4)
+            b | B)
                 return 0
                 ;;
             *)

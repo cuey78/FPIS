@@ -1,7 +1,7 @@
 #!/bin/bash
 ################################################################################
 # Plugin metadata (new format)
-# menu_title = "Custom Shell ohhmyzsh / ohhmybash"
+# menu_title = "Shell Improvements - ohhmyzsh / ohhmybash"
 # menu_function = "main_menu" 
 # menu_order = 1000
 # menu_category = 1
@@ -22,7 +22,7 @@ function install_oh_my_zsh() {
     
     # Install Zsh
     if command -v dnf >/dev/null 2>&1; then
-        dnf install -y zsh
+        sudo dnf install -y zsh
     elif command -v yum >/dev/null 2>&1; then
         yum install -y zsh
     else
@@ -155,7 +155,7 @@ function main_menu() {
             --menu "Select which shell framework to install:" 0 0 0 \
             1 "Install Oh My Zsh only" \
             2 "Install Oh My Bash only" \
-            3 "Exit" \
+            b "Back" \
             3>&1 1>&2 2>&3)
         
         case $choice in
@@ -165,7 +165,7 @@ function main_menu() {
             2)
                 install_oh_my_bash
                 ;;
-            3|"")
+            b|"")
                 clear
                 return 1
                 ;;

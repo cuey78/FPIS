@@ -60,7 +60,7 @@ flatpak_menu() {
                 15 60 3 \
                 1 "Enable Flatpak Support" \
                 2 "Install Applications via Flatpak" \
-                3 "Return to Main Menu" \
+                b "Back" \
                 3>&1 1>&2 2>&3)
 
         # Clear the screen after the dialog closes
@@ -73,7 +73,7 @@ flatpak_menu() {
             2) 
                 # Option 2: Install Flatpak apps through the install_flatpaks function
                 install_flatpaks ;;
-            3) 
+            b | B) 
                 # Option 3: Exit the menu loop
                 break ;;
             *) 

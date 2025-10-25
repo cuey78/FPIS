@@ -39,14 +39,14 @@ install_media_codecs() {
 
     # Resolve FFmpeg conflicts and install full suite
     dialog --infobox "Resolving FFmpeg package conflicts..." 5 50
-    if sudo dnf install ffmpeg ffmpeg-libs --allowerasing; then
+    if sudo dnf install -y ffmpeg ffmpeg-libs --allowerasing; then
         dialog --infobox "FFmpeg installed successfully" 5 50
         sleep 2
     else
         dialog --msgbox "Failed to install FFmpeg. Trying alternative approach..." 10 60
         # Alternative: Remove conflicts first, then install
-        sudo dnf remove libswscale-free libswresample-free --allowerasing
-        sudo dnf install ffmpeg ffmpeg-libs
+        sudo dnf remove libswscale-free libswresample-free --allowerasing -y
+        sudo dnf install -y ffmpeg ffmpeg-libs
     fi
 
     # Install essential codec packages

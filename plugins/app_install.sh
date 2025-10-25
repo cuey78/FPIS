@@ -126,7 +126,7 @@ install_gaming_utils() {
 install_dev_tools() {
   clear
   echo "Installing Development Tools..."
-  sudo dnf group install c-development development-tools 
+  sudo dnf group install -y c-development development-tools 
 }
 
 # Function for the main script loop

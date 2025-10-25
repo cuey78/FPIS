@@ -1,10 +1,15 @@
+com.mattjakeman.ExtensionManager
 com.brave.Browser
+com.microsoft.Edge
+app.zen_browser.zen
 it.mijorus.gearlever
+dev.vencord.Vesktop
+com.vysp3r.ProtonPlus
+com.github.tchx84.Flatseal
 com.moonlight_stream.Moonlight
 com.valvesoftware.SteamLink
-org.qbittorrent.qBittorrent
 io.missioncenter.MissionCenter
 com.parsecgaming.parsec
 org.videolan.VLC
 org.ryujinx.Ryujinx
-com.mattjakeman.ExtensionManager
+
