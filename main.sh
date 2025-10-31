@@ -794,6 +794,7 @@ main() {
     
     echo -e "${COLOR_CYAN}[DEBUG] About to call show_menu${COLOR_RESET}"
     show_menu
+    clear
     echo -e "${COLOR_CYAN}[DEBUG] show_menu completed${COLOR_RESET}"
     
     log_info "Script completed successfully"
