@@ -87,7 +87,9 @@ install_media_codecs() {
 ✅ H.264 support: $h264_support decoders\n\
 ✅ HEVC/H.265 support: $hevc_support decoders\n\
 ✅ MP3 support: $mp3_support decoders\n\
-✅ Hardware acceleration: $hw_accel methods\n\n\
+✅ Hardware acceleration: $hw_accel methods\n\
+✅ DVD decryption (libdvdcss)\n\
+✅ Blu-ray decryption (libaacs, libbdplus)\n\n\
 Your system now has comprehensive media playback capabilities." 15 70
         clear
     else
