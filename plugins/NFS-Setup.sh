@@ -18,43 +18,113 @@ check_install_nfs_utils() {
         return 0
     fi
     
-    echo "Installing nfs-utils package..."
-    sudo dnf install -y nfs-utils
+    echo "NFS utilities are not installed. This package is required for NFS configuration."
+    
+    # Prompt user to install nfs-utils
+    if dialog --yesno "NFS utilities (nfs-utils) are required but not installed.\n\nDo you want to install them now?" 10 60; then
+    	clear
+        echo "Installing nfs-utils package..."
+        if sudo dnf install -y nfs-utils; then
+            dialog --msgbox "nfs-utils installed successfully!" 8 40
+            return 0
+        else
+            dialog --msgbox "Failed to install nfs-utils. Please check your network connection and try again." 8 60
+            return 1
+        fi
+    else
+        dialog --msgbox "NFS utilities are required to continue. Exiting NFS configuration." 8 50
+        return 1
+    fi
+}
+
+# Enhanced version that returns success/failure
+check_nfs_dependencies() {
+    if command -v showmount &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 #Scans for Wifi Networks
 setup_wifi_nfs_shares() {
-    check_install_nfs_utils
-    # Function to scan for available Wi-Fi networks and select one
-    scan_and_select_wifi() {
-        WIFI_SSID=""
-        dialog --infobox "Scanning for available Wi-Fi networks..." 10 50
-        sleep 0.5
-        AVAILABLE_SSIDS=$(nmcli -t -f SSID dev wifi | sort -u)
+    # Check dependencies at the start of each function
+    if ! check_nfs_dependencies; then
+        dialog --msgbox "NFS utilities are not available. Please install nfs-utils first." 8 50
+        return 1
+    fi
 
-        if [ -z "$AVAILABLE_SSIDS" ]; then
-            dialog --infobox "No Wi-Fi networks found. Exiting..." 10 50
-            sleep 1
-            return 1
-        fi
-
-        # Prepare list for dialog
-        SSID_LIST=()
-        for SSID in $AVAILABLE_SSIDS; do
-            SSID_LIST+=("$SSID" "$SSID" OFF)
-        done
-
-        WIFI_SSID=$(dialog --radiolist "Available Wi-Fi networks:" 15 50 8 "${SSID_LIST[@]}" 3>&1 1>&2 2>&3)
-
-        if [ -z "$WIFI_SSID" ]; then
-            dialog --infobox "No selection made. Exiting..." 10 50
-            sleep 1
-            return 1
+# Check if Wi-Fi is enabled and working
+check_wifi_adapter() {
+    if ! nmcli radio wifi | grep -q "enabled"; then
+        dialog --yesno "Wi-Fi is currently disabled. Would you like to enable it?" 8 50
+        if [ $? -eq 0 ]; then
+            nmcli radio wifi on
+            sleep 2
         else
-            dialog --infobox "Selected Wi-Fi SSID: $WIFI_SSID" 10 50
-            sleep 1
+            return 1
         fi
-    }
+    fi
+    
+    # Check if any Wi-Fi adapter is available
+    if ! nmcli dev status | grep -q "wifi"; then
+        dialog --msgbox "No Wi-Fi adapter found. Please check your hardware." 8 50
+        return 1
+    fi
+    return 0
+}
+scan_and_select_wifi() {
+    WIFI_SSID=""
+    
+    # Check Wi-Fi adapter first
+    if ! check_wifi_adapter; then
+        return 1
+    fi
+    
+    dialog --infobox "Scanning for available Wi-Fi networks...\nThis may take a few seconds." 10 50
+    sleep 1
+    
+    # Multiple scan attempts with forced rescan
+    for attempt in 1 2 3; do
+        sudo nmcli dev wifi rescan 2>/dev/null
+        sleep 3  # Give more time for scanning
+        
+        AVAILABLE_SSIDS=$(nmcli -t -f SSID,SIGNAL dev wifi list | sort -r -t: -k2 | cut -d: -f1 | grep -v '^$' | sort -u)
+        
+        if [ -n "$AVAILABLE_SSIDS" ]; then
+            break
+        fi
+        
+        if [ $attempt -lt 3 ]; then
+            dialog --infobox "Scan attempt $attempt failed, retrying..." 5 50
+            sleep 2
+        fi
+    done
+
+    if [ -z "$AVAILABLE_SSIDS" ]; then
+        dialog --msgbox "No Wi-Fi networks found after multiple attempts.\n\nPossible reasons:\n• Wi-Fi adapter disabled\n• No networks in range\n• Driver issues\n• Airplane mode enabled" 12 60
+        return 1
+    fi
+
+    # Prepare list for dialog with signal strength
+    SSID_LIST=()
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            SSID_LIST+=("$line" "$line" OFF)
+        fi
+    done <<< "$AVAILABLE_SSIDS"
+
+    WIFI_SSID=$(dialog --radiolist "Available Wi-Fi networks (sorted by signal strength):" 20 60 15 "${SSID_LIST[@]}" 3>&1 1>&2 2>&3)
+
+    if [ -z "$WIFI_SSID" ]; then
+        dialog --infobox "No selection made. Exiting..." 10 50
+        sleep 1
+        return 1
+    else
+        dialog --infobox "Selected Wi-Fi SSID: $WIFI_SSID" 10 50
+        sleep 1
+    fi
+}
 
     # Function to update the nfs1.sh script
     update_nfs_script() {
@@ -224,7 +294,12 @@ setup_wifi_nfs_shares() {
 
 # Setup NFS shares via FSTAB with showmount discovery
 nfs_shares_via_fstab() {
-    check_install_nfs_utils
+    # Check dependencies at the start of each function
+    if ! check_nfs_dependencies; then
+        dialog --msgbox "NFS utilities are not available. Please install nfs-utils first." 8 50
+        return 1
+    fi
+    
     echo "NFS Shares Via FSTAB (Wired Only)"
     # Connect NFS Shares VIA FSTAB
     clear
@@ -398,7 +473,12 @@ nfs_shares_via_fstab() {
 
 # Main Function to Setup Shares
 nfs_setup(){
-  while true; do
+    # Check for NFS dependencies at the very beginning
+    if ! check_install_nfs_utils; then
+        return 1
+    fi
+
+    while true; do
         CHOICE=$(dialog --clear \
                 --title "NFS Share Setup" \
                 --nocancel \
@@ -418,4 +498,3 @@ nfs_setup(){
         esac
     done
 }
-
