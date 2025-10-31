@@ -46,6 +46,7 @@ tweaks_gnome() {
 
     done
 }
+
 # Set GDM Login to Primary Monitor
 fix_gdm_login() {
     clear
@@ -88,6 +89,7 @@ fix_gdm_login() {
         return 1
     fi
 }
+
 # Sets gtk theme dark/light/etc 
 set_gtk_theme() {
     local theme_name="$1"
@@ -103,6 +105,7 @@ set_gtk_theme() {
     gsettings set org.gnome.desktop.interface gtk-theme "$theme_name"
     dialog --msgbox "GTK theme successfully changed to $theme_name" 0 0
 }
+
 # Main Function for Set Gtk Theme 
 choose_gtk_theme() {
 # Show dialog menu for theme selection
@@ -227,4 +230,101 @@ gnome_extensions_main(){
     
     # Call the function to install GNOME extensions
     install_gnome_extensions
+}
+
+gnome_weather() {
+    # Get the actual desktop user (not root)
+    if [ -z "$SUDO_USER" ]; then
+        desktop_user=$(whoami)
+    else
+        desktop_user="$SUDO_USER"
+    fi
+    
+    # Check if GNOME Weather is installed
+    if command -v gnome-weather &>/dev/null; then
+        system=1
+    fi
+
+    if flatpak list --user | grep -q org.gnome.Weather; then
+        flatpak=1
+    fi
+
+    if [[ -z $system && -z $flatpak ]]; then
+        dialog --msgbox "GNOME Weather isn't installed" 0 0
+        return 1
+    fi
+
+    language=$(locale | sed -n 's/^LANG=\([^_]*\).*/\1/p')
+
+    if [[ -n "$*" ]]; then
+        query="$*"
+    else
+        query=$(dialog --inputbox "Enter location:" 0 0 --stdout)
+    fi
+
+    query="$(echo "$query" | sed 's/ /+/g')"
+    request=$(curl -s "https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1" -H "Accept-Language: $language")
+
+    if [[ $request == "[]" ]]; then
+        dialog --msgbox "No locations found, consider removing some search terms" 0 0
+        return 1
+    fi
+
+    location_name=$(echo "$request" | sed 's/.*"display_name":"//' | sed 's/".*//')
+    dialog --yesno "If this is not the location you wanted, consider adding search terms.\n\nAre you sure you want to add \"$location_name\"?" 10 60
+    
+    if [[ $? -ne 0 ]]; then
+        dialog --msgbox "Not adding location" 0 0
+        return 1
+    else
+        dialog --msgbox "Adding location" 0 0
+    fi
+
+    id=$(echo "$request" | sed 's/.*"place_id"://' | sed 's/,.*//')
+    details=$(curl -s "https://nominatim.openstreetmap.org/details.php?place_id=$id&format=json")
+
+    if [[ $details == *"name:$language"* ]]; then
+        name=$(echo "$details" | sed "s/.*\"name:$language\": \"//" | sed 's/\".*//')
+    else
+        name=$(echo "$details" | sed 's/.*"name": "//' | sed 's/".*//')
+    fi
+
+    lat=$(echo "$request" | sed 's/.*"lat":"//' | sed 's/".*//')
+    lat=$(echo "$lat / (180 / 3.141592654)" | bc -l)
+
+    lon=$(echo "$request" | sed 's/.*"lon":"//' | sed 's/".*//')
+    lon=$(echo "$lon / (180 / 3.141592654)" | bc -l)
+
+    # Correct the location format
+    location="<(uint32 2, <('$name', '', false, [($lat, $lon)], @a(dd) [])>)>"
+
+    if [[ $system == 1 ]]; then
+        # Export the user's DBUS_SESSION_BUS_ADDRESS to interact with their GNOME session
+        export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u $desktop_user)/bus
+        
+        locations=$(sudo -u $desktop_user gsettings get org.gnome.Weather locations)
+
+        if [[ "$locations" != "@av []" ]]; then
+            updated_locations=$(echo "$locations" | sed "s|>]$|>, $location]|")
+            sudo -u $desktop_user gsettings set org.gnome.Weather locations "$updated_locations"
+        else
+            sudo -u $desktop_user gsettings set org.gnome.Weather locations "[$location]"
+        fi
+    fi
+
+    if [[ $flatpak == 1 ]]; then
+        # For Flatpak, we need to use the flatpak run command
+        export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u $desktop_user)/bus
+        
+        locations=$(sudo -u $desktop_user flatpak run --command=gsettings org.gnome.Weather get org.gnome.Weather locations)
+
+        if [[ "$locations" != "@av []" ]]; then
+            updated_locations=$(echo "$locations" | sed "s|>]$|>, $location]|")
+            sudo -u $desktop_user flatpak run --command=gsettings org.gnome.Weather set org.gnome.Weather locations "$updated_locations"
+        else
+            sudo -u $desktop_user flatpak run --command=gsettings org.gnome.Weather set org.gnome.Weather locations "[$location]"
+        fi
+    fi
+    
+    dialog --msgbox "Location '$name' added successfully to GNOME Weather!" 0 0
 }
