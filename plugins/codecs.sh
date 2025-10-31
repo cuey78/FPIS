@@ -1,19 +1,5 @@
 #!/bin/bash
-#-------------------------------------------------------------------------------------#
-# Fedora Post-Installation Utility Script                                             #
-# This script facilitates the installation of media codecs on a Fedora system.        #
-#                                                                                     #
-# Functions:                                                                          #
-#   - install_media_codecs: Installs essential media codecs for multimedia playback.  #
-#                                                                                     #
-# Usage:                                                                              #
-#   This script is designed to be run as a plugin module as part of the Fedora        #
-#   Post-Installation Script. It does not need to be executed separately.             #
-# Prerequisites:                                                                      #
-#   - The script assumes a Fedora system with DNF installed.                          #
-#   - Internet connection is required for downloading packages and updates.           #
-#   - RPM Fusion repositories should be enabled for this function to work properly.   #
-#-------------------------------------------------------------------------------------#
+
 ################################################################################
 # Plugin metadata (new format)
 # menu_title = "Comprehensive Media Codecs Install"
@@ -21,36 +7,46 @@
 # menu_order = 500
 # menu_category = 1
 ###############################################################################
-install_media_codecs() {
-    echo "=========================================="
-    echo "|   Installing Comprehensive Media Codecs |"
-    echo "=========================================="
 
+install_media_codecs() {
+    clear
+    
     # Check if RPM Fusion repositories are enabled
     if ! dnf repolist | grep -q "rpmfusion-free"; then
         dialog --msgbox "RPM Fusion Free repository not enabled. Please enable RPM Fusion first." 10 60
+        clear
         return 1
     fi
 
     if ! dnf repolist | grep -q "rpmfusion-nonfree"; then
         dialog --msgbox "RPM Fusion Non-Free repository not enabled. Please enable RPM Fusion first." 10 60
+        clear
         return 1
     fi
 
     # Resolve FFmpeg conflicts and install full suite
     dialog --infobox "Resolving FFmpeg package conflicts..." 5 50
+    sleep 2
+    clear
+    
     if sudo dnf install -y ffmpeg ffmpeg-libs --allowerasing; then
         dialog --infobox "FFmpeg installed successfully" 5 50
         sleep 2
+        clear
     else
         dialog --msgbox "Failed to install FFmpeg. Trying alternative approach..." 10 60
+        clear
         # Alternative: Remove conflicts first, then install
         sudo dnf remove libswscale-free libswresample-free --allowerasing -y
         sudo dnf install -y ffmpeg ffmpeg-libs
+        clear
     fi
 
     # Install essential codec packages
     dialog --infobox "Installing essential codec packages..." 5 50
+    sleep 2
+    clear
+    
     sudo dnf install -y \
         gstreamer1-plugins-base \
         gstreamer1-plugins-good \
@@ -61,20 +57,22 @@ install_media_codecs() {
         x264 \
         x265 \
         libavif \
-        ffmpegthumbnailer
+        ffmpegthumbnailer \
+        libdvdcss \
+        libaacs \
+        libbdplus
 
     # Install additional audio codecs
     dialog --infobox "Installing audio codecs..." 5 50
+    sleep 2
+    clear
+    
     sudo dnf install -y lame* --exclude=lame-devel
-
-    # Upgrade multimedia group (optional but comprehensive)
-    if dialog --yesno "Upgrade full Multimedia package group? (Adds VLC, Audacity, etc.)" 10 60; then
-        dialog --infobox "Upgrading Multimedia package group..." 5 50
-        sudo dnf group upgrade -y --with-optional Multimedia
-    fi
 
     # Verify installation
     dialog --infobox "Verifying codec installation..." 5 50
+    sleep 2
+    clear
     
     # Check FFmpeg capabilities
     if command -v ffmpeg >/dev/null 2>&1; then
@@ -91,23 +89,31 @@ install_media_codecs() {
 ✅ MP3 support: $mp3_support decoders\n\
 ✅ Hardware acceleration: $hw_accel methods\n\n\
 Your system now has comprehensive media playback capabilities." 15 70
+        clear
     else
         dialog --msgbox "Installation completed but FFmpeg verification failed." 10 60
+        clear
     fi
 
     # Final test recommendation
     if dialog --yesno "Would you like to test media playback with a sample video?" 10 60; then
+        clear
         test_media_playback
     fi
+    clear
 }
 
 # Test media playback function
 test_media_playback() {
+    clear
     local test_commands=(
         "ffmpeg -version"
         "gst-inspect-1.0 --version"
         "ffplay -autoexit -t 10 -f lavfi -i testsrc 2>/dev/null"
     )
+    
+    echo "=== Media Playback Test ==="
+    echo
     
     for cmd in "${test_commands[@]}"; do
         echo "Testing: $cmd"
@@ -119,7 +125,9 @@ test_media_playback() {
         echo
     done
     
-    dialog --msgbox "Media playback tests completed. Check terminal for results." 10 60
+    echo "Media playback tests completed."
+    read -p "Press Enter to continue..."
+    clear
 }
 
 # Quick codec verification function
@@ -152,4 +160,5 @@ verify_codecs() {
     
     echo
     read -p "Press Enter to continue..."
+    clear
 }
