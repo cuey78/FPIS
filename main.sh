@@ -92,7 +92,7 @@ init_config() {
 name = "Fedora Post-Install Script"
 version = "2.0.0"
 author = "cuey"
-repository = "https://github.com/cuey78/Fedora-Post-Install"
+repository = "https://github.com/cuey78/FPIS"
 
 [settings]
 cache_dir = ".cache"
@@ -220,7 +220,7 @@ banner() {
     echo -e "${color1}${padding}║${color2}                       2025 Edition${color1}                       ║${COLOR_RESET}"
     echo -e "${color1}${padding}╚══════════════════════════════════════════════════════════╝${COLOR_RESET}"
     echo -e "${padding}         ${COLOR_WHITE}Fast • Modular • Configurable • Reliable${COLOR_RESET}"
-    echo -e "${padding}       ${color2}https://github.com/cuey78/Fedora-Post-Install${COLOR_RESET}"
+    echo -e "${padding}                  ${color2}https://github.com/cuey78/FPSI${COLOR_RESET}"
     echo
     sleep 2
 }
