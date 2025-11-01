@@ -2,7 +2,7 @@
 
 #########################################################################################
 #                                                                                       #
-# Fedora Post-Install Script (Modernized)                                               #
+# Fedora Post-Install Script                                                            #
 #                                                                                       #
 # Features:                                                                             #
 #   - TOML-based configuration system                                                   #
