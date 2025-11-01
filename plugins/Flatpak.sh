@@ -42,10 +42,23 @@ enable_flathub() {
     # Add the Flathub repository
     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     if [[ $? -eq 0 ]]; then
-        dialog --msgbox "Flathub Enabled" 0 0
+        echo "Flathub repository added successfully."
     else
-        dialog --msgbox "Failed to add Flathub repository." 0 0
+        echo "Failed to add Flathub repository."
         return 1
+    fi
+
+    # Disable the Fedora repository if it exists
+    if flatpak remote-list | grep -q "fedora"; then
+        flatpak remote-modify --disable fedora
+        if [[ $? -eq 0 ]]; then
+            dialog --msgbox "Flathub Enabled and Fedora repository disabled" 0 0
+        else
+            dialog --msgbox "Flathub Enabled but failed to disable Fedora repository" 0 0
+            return 1
+        fi
+    else
+        dialog --msgbox "Flathub Enabled (Fedora repository not found)" 0 0
     fi
 }
 
