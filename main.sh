@@ -220,7 +220,7 @@ banner() {
     echo -e "${color1}${padding}║${color2}                       2025 Edition${color1}                       ║${COLOR_RESET}"
     echo -e "${color1}${padding}╚══════════════════════════════════════════════════════════╝${COLOR_RESET}"
     echo -e "${padding}         ${COLOR_WHITE}Fast • Modular • Configurable • Reliable${COLOR_RESET}"
-    echo -e "${padding}                  ${color2}https://github.com/cuey78/FPSI${COLOR_RESET}"
+    echo -e "${padding}               ${color2}https://github.com/cuey78/FPSI${COLOR_RESET}"
     echo
     sleep 2
 }
