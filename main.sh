@@ -7,7 +7,6 @@
 # Features:                                                                             #
 #   - TOML-based configuration system                                                   #
 #   - Command-line flags for control                                                    #
-#   - Parallel package installation                                                     #
 #   - Cached metadata for faster startup                                                #
 #   - Modular plugin system with categories                                             #
 #                                                                                       #
@@ -31,8 +30,6 @@ CONFIG_FILE="${SCRIPT_DIR}/config.toml"
 CACHE_DIR="${SCRIPT_DIR}/.cache"
 SKIP_CHECKS=false
 SHOW_BANNER=true
-PARALLEL_INSTALL=true
-MAX_JOBS=4
 
 # Color codes
 readonly COLOR_RED='\033[0;31m'
@@ -96,8 +93,6 @@ repository = "https://github.com/cuey78/FPIS"
 
 [settings]
 cache_dir = ".cache"
-parallel_install = true
-max_jobs = 4
 log_file = "fedora-post-install.log"
 
 [dependencies]
@@ -160,14 +155,6 @@ parse_args() {
                 CONFIG_FILE="$2"
                 shift 2
                 ;;
-            --parallel)
-                PARALLEL_INSTALL=true
-                shift
-                ;;
-            --no-parallel)
-                PARALLEL_INSTALL=false
-                shift
-                ;;
             -v|--version)
                 echo "Fedora Post-Install Script v${VERSION}"
                 exit 0
@@ -194,8 +181,6 @@ Options:
   --no-banner       Don't show banner on startup
   --cache-dir DIR   Use custom cache directory
   --config FILE     Use custom config file
-  --parallel        Enable parallel installation (default)
-  --no-parallel     Disable parallel installation
   -v, --version     Show version information
   -h, --help        Show this help message
 
@@ -540,8 +525,6 @@ load_plugins() {
         convert_old_plugins
     fi
 }
-
-
 
 # Show menu for a specific category
 show_category_menu() {
