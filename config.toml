@@ -2,7 +2,7 @@
 name = "Fedora Post-Install Script"
 version = "2.0.0"
 author = "cuey"
-repository = "https://github.com/cuey78/Fedora-Post-Install"
+repository = "https://github.com/cuey78/FPIS"
 
 [settings]
 cache_dir = ".cache"
