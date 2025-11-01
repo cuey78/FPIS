@@ -28,28 +28,20 @@ configure_hugepages() {
     dialog --msgbox "Configuring HugePages for ${memory_gb} GB memory using 2MB HugePages...\nHugePages required: $required_pages" 0 0
 }
 
-hook_config() {
-    if [[ -z "$required_pages" ]]; then
-        dialog --msgbox "Error: HugePages calculation not done. Please run 'configure_hugepages' first." 0 0
+create_kvm_config() {
+    if [[ -z "$required_pages" || -z "$vm_name" ]]; then
+        dialog --msgbox "Error: Configuration incomplete. Please run previous steps first." 0 0
         return 1
     fi
 
-    vm_name=$(dialog --stdout --inputbox "Enter the name of the VM to allocate HugePages for:" 0 0)
-
-    if [[ -z "$vm_name" ]]; then
-        dialog --msgbox "Error: Please provide a valid VM name." 0 0
-        return 1
-    fi
-
-    # Write the kvm.conf file
-    mkdir -p ./hooks
-    cat <<EOF > ./hooks/kvm.conf
+    # Create kvm.conf directly in /etc/libvirt/hooks/
+    cat <<EOF > /etc/libvirt/hooks/kvm.conf
 ## Virtual Machine
 VM_NAME=$vm_name
 MEMORY=$required_pages
 EOF
 
-    dialog --title "kvm.conf Created Successfully" --msgbox "The following configuration has been written to ./hooks/kvm.conf:\n\nVM_NAME=$vm_name\nMEMORY=$required_pages" 0 0
+    dialog --title "kvm.conf Created Successfully" --msgbox "The following configuration has been written to /etc/libvirt/hooks/kvm.conf:\n\nVM_NAME=$vm_name\nMEMORY=$required_pages" 0 0
 }
 
 create_nosleep_service() {
@@ -227,8 +219,8 @@ install_hooks() {
     touch /var/log/libvirt/hooks.log
     chmod 666 /var/log/libvirt/hooks.log
 
-    # Copy config file
-    cp -f ./hooks/kvm.conf /etc/libvirt/hooks/kvm.conf
+    # Create kvm config
+    create_kvm_config
 
     # Create nosleep service
     create_nosleep_service
@@ -248,6 +240,13 @@ install_hooks() {
 
 auto_huge() {
     configure_hugepages || return 1
-    hook_config || return 1
+    
+    # Get VM name here since we removed hook_config()
+    vm_name=$(dialog --stdout --inputbox "Enter the name of the VM to allocate HugePages for:" 0 0)
+    if [[ -z "$vm_name" ]]; then
+        dialog --msgbox "Error: Please provide a valid VM name." 0 0
+        return 1
+    fi
+    
     install_hooks
 }
