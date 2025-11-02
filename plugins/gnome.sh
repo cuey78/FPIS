@@ -94,16 +94,31 @@ fix_gdm_login() {
 set_gtk_theme() {
     local theme_name="$1"
     
-    # Install the required package if missing
+    # Get the actual desktop user (not root)
+    if [ -z "$SUDO_USER" ]; then
+        desktop_user=$(whoami)
+    else
+        desktop_user="$SUDO_USER"
+    fi
+    
+    echo "DEBUG: Theme: $theme_name, User: $desktop_user"
+    
+    # Install package if missing
     if ! rpm -q gnome-themes-extra &>/dev/null; then
-        echo "Installing gnome-themes-extra..."
+        echo "DEBUG: Installing gnome-themes-extra"
         sudo dnf install -y gnome-themes-extra
     fi
     
-    # Set the GTK theme
-    #echo "Setting GTK theme ..."
-    gsettings set org.gnome.desktop.interface gtk-theme "$theme_name"
-    dialog --msgbox "GTK theme successfully changed to $theme_name" 0 0
+    echo "DEBUG: Running gsettings command..."
+    # Set DBUS_SESSION_BUS_ADDRESS in the sudo command itself
+    if sudo -u $desktop_user DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u $desktop_user)/bus gsettings set org.gnome.desktop.interface gtk-theme "$theme_name"; then
+        echo "DEBUG: Command successful"
+        dialog --msgbox "GTK theme set to $theme_name" 0 0
+    else
+        echo "DEBUG: Command failed"
+        dialog --msgbox "Error: Failed to set theme" 0 0
+        return 1
+    fi
 }
 
 # Main Function for Set Gtk Theme 
