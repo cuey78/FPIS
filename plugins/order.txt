@@ -8,3 +8,5 @@ flatpak 700
 virt 800
 app_install 900
 shell 1000
+system tweaks 1100
+fonts 1200
