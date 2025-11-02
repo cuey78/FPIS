@@ -8,7 +8,7 @@
 # Plugin metadata (new format)
 # menu_title = "Fonts - Msfonts / Nerdfont"
 # menu_function = "font_installation_menu" 
-# menu_order = 1100
+# menu_order = 1200
 # menu_category = 1
 ###############################################################################
 # Function to display the font installation menu
